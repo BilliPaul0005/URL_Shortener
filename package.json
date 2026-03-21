@@ -9,10 +9,15 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "dev:local": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/url_shortener REDIS_URL=redis://localhost:6379 nodemon --exec ts-node src/index.ts"
   },
-  "keywords": ["url-shortener", "analytics", "typescript", "express"],
+  "keywords": [
+    "url-shortener",
+    "analytics",
+    "typescript",
+    "express"
+  ],
   "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.0",
@@ -22,7 +27,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/node": "^22.5.0",
     "@types/pg": "^8.11.6",
