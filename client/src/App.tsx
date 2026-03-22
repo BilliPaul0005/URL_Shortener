@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "http://localhost:3000";
+const API =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD
+    ? "https://url-shortener-production-cf36.up.railway.app"
+    : "http://localhost:3000");
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap');
@@ -388,7 +392,7 @@ export default function App() {
     if (!url.trim()) return;
     setLoading(true); setError(""); setResult(null);
     try {
-      const body = { url: url.trim() };
+      const body: any = { url: url.trim() };
       if (customSlug.trim()) body.custom_slug = customSlug.trim();
       const r = await fetch(`${API}/api/shorten`, {
         method: "POST",
