@@ -40,7 +40,8 @@ router.post(
       );
 
       const record = rows[0];
-      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const baseUrl =
+        process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 
       // Pre-warm Redis cache
       await setCache(slug, url);
@@ -83,7 +84,7 @@ router.get('/urls', async (req: Request, res: Response): Promise<void> => {
       [limit, offset]
     );
 
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 
     res.json({
       data: rows.map((r) => ({

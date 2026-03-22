@@ -8,30 +8,47 @@ import analyticsRouter from './routes/analytics';
 
 const app = express();
 
-// ── Global Middleware ──
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Railway and other reverse proxies set forwarding headers for IP/protocol.
+app.set('trust proxy', true);
+
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173',
+  })
+);
 app.use(express.json());
 
-// ── Health Check ──
+app.get('/', (_req: Request, res: Response) => {
+  res.json({
+    name: 'URL Shortener API',
+    status: 'live',
+    version: '1.0.0',
+    endpoints: {
+      shorten: 'POST /api/shorten',
+      redirect: 'GET /:slug',
+      analytics: 'GET /api/analytics/:slug',
+      list: 'GET /api/urls',
+      delete: 'DELETE /api/urls/:slug',
+      health: 'GET /health',
+    },
+  });
+});
+
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── API Routes ──
 app.use('/api', shortenRouter);
 app.use('/api/analytics', analyticsRouter);
 
-// ── Redirect Route ──
-// GET /:slug → 302 redirect, log click asynchronously
 app.get('/:slug', async (req: Request, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
 
-    // 1. Check Redis cache first
     let originalUrl = await getCache(slug);
 
     if (!originalUrl) {
-      // 2. Cache miss — query PostgreSQL
       const { rows } = await query(
         'SELECT id, original_url, expires_at FROM urls WHERE slug = $1',
         [slug]
@@ -44,26 +61,21 @@ app.get('/:slug', async (req: Request, res: Response): Promise<void> => {
 
       const record = rows[0];
 
-      // Check expiration
       if (record.expires_at && new Date(record.expires_at) < new Date()) {
         res.status(410).json({ error: 'This short URL has expired.' });
         return;
       }
 
       originalUrl = record.original_url;
-
-      // 3. Write to Redis cache (24h TTL)
       await setCache(slug, originalUrl!);
     }
 
-    // 4. Log the click asynchronously (fire-and-forget)
     const ip =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       req.socket.remoteAddress ||
       '0.0.0.0';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
-    // Non-blocking click logging
     query(
       `INSERT INTO clicks (url_id, ip_address, user_agent)
        VALUES (
@@ -74,7 +86,6 @@ app.get('/:slug', async (req: Request, res: Response): Promise<void> => {
       [slug, ip, userAgent]
     ).catch((err) => console.error('Click logging error:', err));
 
-    // 5. Redirect
     res.redirect(302, originalUrl!);
   } catch (err) {
     console.error('Redirect error:', err);
