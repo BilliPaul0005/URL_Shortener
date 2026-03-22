@@ -8,9 +8,10 @@ import analyticsRouter from './routes/analytics';
 
 const app = express();
 
-// Railway and other reverse proxies set forwarding headers for IP/protocol.
+// Railway runs behind a reverse proxy; trust forwarded headers for protocol/IP.
 app.set('trust proxy', true);
 
+// ── Global Middleware ──
 app.use(
   cors({
     origin:
@@ -19,6 +20,7 @@ app.use(
 );
 app.use(express.json());
 
+// ── Root ──
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'URL Shortener API',
@@ -35,13 +37,16 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
+// ── Health Check ──
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ── API Routes ──
 app.use('/api', shortenRouter);
 app.use('/api/analytics', analyticsRouter);
 
+// ── Redirect Route ──
 app.get('/:slug', async (req: Request, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
