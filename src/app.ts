@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+
 import { query } from './services/db';
 import { getCache, setCache } from './services/redis';
 import shortenRouter from './routes/shorten';
@@ -8,7 +9,7 @@ import analyticsRouter from './routes/analytics';
 const app = express();
 
 // ── Global Middleware ──
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // ── Health Check ──
