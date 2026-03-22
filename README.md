@@ -21,7 +21,7 @@
 
 <br/>
 
-[**Live Demo**](https://your-app.up.railway.app) · [**API Docs**](#-api-reference) · [**Quick Start**](#-quick-start) · [**Deploy**](#-deployment)
+[**Live Demo**](https://urlshortenerbillipaul0005.up.railway.app/) · [**API Docs**](#-api-reference) · [**Quick Start**](#-quick-start) · [**Deploy**](#-deployment)
 
 </div>
 
